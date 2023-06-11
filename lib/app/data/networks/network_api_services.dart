@@ -7,7 +7,6 @@ import 'package:blade/app/data/exceptions/app_exceptions.dart';
 import 'package:blade/app/data/networks/base_api_services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-
 import '../../resources/appurl/app_url.dart';
 
 class NetworkAPIServices extends BaseAPIServices{
@@ -26,8 +25,10 @@ class NetworkAPIServices extends BaseAPIServices{
        jsonResponse = jsonDecode(response.body);
 
       jsonResponse = responseCodeResponse(response);
+
+
       if (kDebugMode) {
-        print("GETAPI Response from NetworkAPIServices $jsonResponse");
+        print("GET API Response from NetworkAPIServices $jsonResponse");
       }
 
     } on SocketException{
@@ -39,17 +40,22 @@ class NetworkAPIServices extends BaseAPIServices{
   }
 
   @override
-  Future postAPI(data, String url)async{
+  Future postAPI(Map<dynamic, dynamic> data, String url)async{
     if (kDebugMode) {
       print(data);
       print(url);
     }
     dynamic jsonResponse;
     try{
-      final response = await http.post(Uri.parse(url), body: data).timeout(const Duration(seconds: 8));
+      var response = await http.post(Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${APPUrl.apiKey}',
+        },
+        body: jsonEncode(data));
       jsonResponse = responseCodeResponse(response);
       if (kDebugMode) {
-        print(jsonResponse);
+        print("SendMessageAPI Response from NetworkAPIServices $jsonResponse");
       }
     }on SocketException{
       throw InternetException("");

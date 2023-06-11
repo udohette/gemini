@@ -25,5 +25,5 @@ class InvalidUrlException extends AppException {
 }
 
 class FetchDataException extends AppException {
-  FetchDataException([String? message]) : super(message!, '');
+  FetchDataException([String? message]) : super(message!, 'Could not Fecth Data');
 }

@@ -1,4 +1,5 @@
 import 'package:blade/app/data/services/constant.dart';
+import 'package:blade/app/models/chatGPT_display_msg_model.dart';
 import 'package:blade/app/resources/dimensions/dimensions.dart';
 import 'package:blade/app/view_model/controllers/chatgtp_controller.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,7 +19,6 @@ class ChatGPTView extends StatefulWidget {
 }
 
 class _ChatGPTViewState extends State<ChatGPTView> {
-  final bool isTyping = true;
   late TextEditingController _controller;
   ChatGptController controller = Get.put(ChatGptController());
   @override
@@ -45,56 +45,63 @@ class _ChatGPTViewState extends State<ChatGPTView> {
         leading: Padding(padding: const EdgeInsets.all(8.0), child: Image.asset(AssetManager.openai_logo),),
       ),
       backgroundColor: AppColor.scaffoldBackground,
-      body: Column(
-        children: [
-          Flexible(
-            child: ListView.builder(
-                itemCount: 6,
-                itemBuilder: (BuildContext context, int index){
-                  return ChatWidget(
-                    msg: chatMessages[index]['msg'].toString(),
-                    chatIndex: int.parse(chatMessages[index]['chatIndex'].toString()),
-                  );
-
-                }),
-          ),
-          if(isTyping)...[
-            SpinKitThreeBounce(color: AppColor.white, size: Dimensions.fs20,),
-            SizedBox(height: Dimensions.getHeight / 50,),
-            Material(
-              color: AppColor.cardColor,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Expanded(child: TextField(
-                      style: TextStyle(color: AppColor.white),
-                      controller: _controller,
-                      onSubmitted: (value) {
-
-                      },
-                      decoration: InputDecoration.collapsed(
-                        hintStyle: TextStyle(color: AppColor.grey),
-                          hintText: "Hello how can i  Help you?"),
-                    )),
-                    IconButton(onPressed: (){
-                      try{
-                        //APIServices.getModels();
-                        controller.getModelList();
-                      }catch(error){
-                        print("Error During Send $error");
-                      }
-
-                    }, icon: Icon(Icons.send, color: AppColor.white,))
-
-                  ],
+      body:Column(
+              children: [
+                Flexible(
+                  child: ListView.builder(
+                      itemCount:controller.chatList.length,
+                      itemBuilder: (BuildContext context, int index){
+                        return ChatWidget(
+                                msg: controller.chatList[index].msg.toString(),
+                                chatIndex: controller.chatList[index].chatIndex,
+                        );
+                      }),
                 ),
-              ),
-            )
-          ]
-        ],
-      ),
+                if(controller.isLoading.value) ...[
+                  const SpinKitThreeBounce(color: AppColor.white, size: Dimensions.fs20),],
+                  SizedBox(height: Dimensions.getHeight / 50,),
+                  Material(
+                    color: AppColor.cardColor,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Expanded(child: TextField(
+                            style: TextStyle(color: AppColor.white),
+                            controller: _controller,
+                            onSubmitted: (value) {
+                              controller.messagePosition.value = _controller.text.toString();
+                                controller.isLoading.value = true;
+                                controller.sendMessage(controller.messagePosition.value);
+                                controller.messagePosition.value.toString();
 
+                            },
+                            decoration: InputDecoration.collapsed(
+                              hintStyle: TextStyle(color: AppColor.grey),
+                                hintText: "Paste TMA Question Here!"),
+                          )),
+                          IconButton(onPressed: (){
+                            try{
+                                controller.isLoading.value = true;
+                                controller.chatList.add(DisplayChatModel(
+                                    msg: _controller.text,
+                                    chatIndex: 0));
+                                //_controller.clear();
+                              controller.messagePosition.value = _controller.text.toString();
+                             controller.chatList.addAll( controller.sendMessage(controller.messagePosition.value));
+                            }catch(error){
+                              print("Error During Send $error");
+
+                            }finally{
+                                controller.isLoading.value = false;
+                            }
+                          }, icon: Icon(Icons.send, color: AppColor.white,))
+                        ],
+                      ),
+                    ),
+                  )
+              ],
+            ),
     );
   }
 }

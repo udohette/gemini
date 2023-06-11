@@ -42,10 +42,7 @@ class _NounPortalViewState extends State<NounPortalView> {
 
       },
       onPageFinished: (url) {
-        setState(() {
           isLoading = false;
-        });
-
       },
     ))
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
